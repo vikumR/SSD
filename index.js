@@ -1,44 +1,46 @@
-// Import the express lirbary
+// Import express 
 const express = require('express')
 
-// Import the axios library, to make HTTP requests
+// Import axios 
 const axios = require('axios')
 
-// This is the client ID and client secret that you obtained
-// while registering the application
+// Client ID 
 const clientID = 'b1da38b8468cf271c557'
+    // Client secret
 const clientSecret = '56d05875d2c4510480a06789d99312dd055fdf2c'
 
-// Create a new express application and use
-// the express static middleware, to serve all files
-// inside the public directory
+// Create express app
 const app = express()
+
+// Serve all files in public directory
 app.use(express.static(__dirname + '/public'))
 
+// Routing
 app.get('/oauth/redirect', (req, res) => {
-    // The req.query object has the query params that
-    // were sent to this route. We want the `code` param
+
+    // Extract the code param from req.query 
     const requestToken = req.query.code
+
     axios({
-        // make a POST request
+        // Make POST request from GitHub for authenticating the user
         method: 'post',
-        // to the Github authentication API, with the client ID, client secret
-        // and request token
         url: `https://github.com/login/oauth/access_token?client_id=${clientID}&client_secret=${clientSecret}&code=${requestToken}`,
-        // Set the content type header, so that we get the response in JSOn
+
+        // For a JSON response, set the content type in the header
         headers: {
             accept: 'application/json'
         }
     }).then((response) => {
-        // Once we get the response, extract the access token from
-        // the response body
+        // Get the access token from the response body
         const accessToken = response.data.access_token
-            // redirect the user to the welcome page, along with the access token
+
+        // Use the access token to redirect the user to the welcome page 
         res.redirect(`/welcome.html?access_token=${accessToken}`)
     })
 })
 
-// Start the server on port 8080
+// Store the port number as an environment variable
 const port = process.env.PORT || 8080;
-app.listen(port, () => console.log(`Server started on port ${port}`));
-// app.listen(8080)
+
+// Start the server on port 8080
+app.listen(port, () => console.log(`Server started on port ${port}. Access: http://localhost:${port}/`));
